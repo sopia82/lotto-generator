@@ -25,23 +25,42 @@ export default function App() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [history, setHistory] = useState([]);
 
+  // Helper to format today's date in YYYY-MM-DD
+  const getTodayDateString = () => {
+    const d = new Date();
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
   // Fetch Stats & Latest Draw from Backend Express Proxy
   const fetchData = async (count = statsCount) => {
     setIsLoading(true);
+    const todayStr = getTodayDateString();
     try {
       // Fetch recent statistics
       const res = await axios.get(`/api/lotto/stats?count=${count}`);
       if (res.data && res.data.success) {
-        setStats(res.data.stats);
-        setLatestDraw(res.data.stats.latestDraw);
+        const statsData = res.data.stats;
+        const updatedLatest = {
+          ...statsData.latestDraw,
+          drwNoDate: todayStr
+        };
+        setStats(statsData);
+        setLatestDraw(updatedLatest);
       } else {
         throw new Error('Invalid response structure');
       }
     } catch (err) {
       console.log('Using local lotto dataset (Offline / Static GitHub Pages mode)');
       const fallback = getFallbackStats(count);
+      const updatedLatest = {
+        ...fallback.latestDraw,
+        drwNoDate: todayStr
+      };
       setStats(fallback);
-      setLatestDraw(fallback.latestDraw);
+      setLatestDraw(updatedLatest);
     } finally {
       setIsLoading(false);
     }
