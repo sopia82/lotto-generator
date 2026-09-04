@@ -6,6 +6,7 @@ import StatsChart from './components/StatsChart';
 import NumberSelector from './components/NumberSelector';
 import GeneratorResults from './components/GeneratorResults';
 import { generateWeightedLottoGames } from './utils/lottoAlgorithm';
+import { getFallbackStats } from './utils/lottoData';
 import { HelpCircle, ShieldCheck, Sparkles, Zap } from 'lucide-react';
 
 export default function App() {
@@ -33,26 +34,14 @@ export default function App() {
       if (res.data && res.data.success) {
         setStats(res.data.stats);
         setLatestDraw(res.data.stats.latestDraw);
+      } else {
+        throw new Error('Invalid response structure');
       }
     } catch (err) {
-      console.error('Failed to fetch lotto stats from API proxy:', err);
-      // Fallback local dummy stats if backend offline
-      setStats({
-        frequency: Object.fromEntries(Array.from({ length: 45 }, (_, i) => [i + 1, Math.floor(Math.random() * 8) + 1])),
-        hotNumbers: [3, 12, 27, 34, 45],
-        coldNumbers: [5, 18, 22, 31, 39],
-        analyzedDrawsCount: count,
-        startDrawNo: 1100,
-        endDrawNo: 1100 + count,
-        latestDraw: {
-          drwNo: 1135,
-          drwNoDate: '2024-08-31',
-          numbers: [1, 3, 14, 28, 31, 45],
-          bonusNo: 23,
-          firstWinamnt: 2200000000,
-          firstPrzwnerCo: 11
-        }
-      });
+      console.log('Using local lotto dataset (Offline / Static GitHub Pages mode)');
+      const fallback = getFallbackStats(count);
+      setStats(fallback);
+      setLatestDraw(fallback.latestDraw);
     } finally {
       setIsLoading(false);
     }

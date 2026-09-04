@@ -5,7 +5,9 @@ node_modules/
 dist/
 build/
 
-# Logs & temp files
+# Deployment & temp scripts with secrets
+server/deploy_gh_pages.js
+server/github_deploy.js
 *.log
 npm-debug.log*
 yarn-debug.log*
